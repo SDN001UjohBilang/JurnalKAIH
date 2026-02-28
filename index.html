@@ -634,7 +634,17 @@
                     <Card className="w-full p-6 animate-fade-in-up shadow-xl">
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-6">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" alt="Tutwuri" className="w-20 h-20 object-contain"/>
+                                {/* Menggunakan endpoint lh3 yang lebih stabil untuk embedding Google Drive */}
+                                <img 
+                                    src="https://lh3.googleusercontent.com/d/1HfcBcJ9zSKCOhU3vgFNhjG0tFKmXMclx" 
+                                    alt="Logo SDN 001 Ujoh Bilang" 
+                                    className="w-24 h-24 object-contain"
+                                    loading="lazy"
+                                    onError={(e) => { 
+                                        e.target.onerror = null; 
+                                        e.target.src = 'https://via.placeholder.com/150?text=SDN+001'; 
+                                    }}
+                                />
                             </div>
                             <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Jurnal KAIH</h1>
                             <p className="text-slate-500 text-sm font-semibold mt-1 uppercase tracking-tight">SDN 001 Ujoh Bilang</p>
@@ -730,7 +740,7 @@
                     const logs = {};
                     snapshot.forEach(doc => logs[doc.id] = doc.data());
                     setLogData(logs);
-                });
+                }, (error) => console.error("Snapshot error:", error));
             }, [firebaseUser, user.id]);
 
             const handleSave = async (habitData) => {
@@ -866,7 +876,8 @@
             
             React.useEffect(() => {
                 if (!user.childId) return;
-                return db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.childId}`).doc(date).onSnapshot(d => setChildLog(d.exists ? { ...d.data(), studentId: user.childId } : null));
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.childId}`).doc(date);
+                return docRef.onSnapshot(d => setChildLog(d.exists ? { ...d.data(), studentId: user.childId } : null), (error) => console.error("Snapshot error:", error));
             }, [user.childId, date]);
 
             const handleValidate = async (option) => {
